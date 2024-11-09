@@ -1,8 +1,12 @@
-import express, { Router } from "express";
+import express, { json, urlencoded } from "express";
 import productRouter from "./routes/products";
 
 const app = express();
-const port = 5001;
+const port = process.env.PORT;
+
+app.use(urlencoded({ extended: true }));
+
+app.use(json());
 
 app.use("/products", productRouter);
 
