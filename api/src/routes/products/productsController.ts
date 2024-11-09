@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { db } from "../../db";
 import { productTable } from "../../db/productSchema";
 import { DrizzleError, eq } from "drizzle-orm";
+import _ from "lodash";
+import { createProductSchema } from "../../db/productSchema";
 
 export async function listProducts(req: Request, res: Response) {
   try {
@@ -29,9 +31,14 @@ export async function getProductById(req: Request, res: Response) {
 }
 export async function createProduct(req: Request, res: Response) {
   try {
+    const data: Pick<String, any> = _.pick(
+      req.body,
+      Object.keys(createProductSchema.shape)
+    );
+    // const { id, ...rest } = req.body;
     const [product] = await db
       .insert(productTable)
-      .values(req.body)
+      .values(req.cleanBody)
       .returning();
     res.status(201).json(product);
   } catch (e) {
@@ -43,7 +50,7 @@ export async function updateProduct(req: Request, res: Response) {
     const id = Number(req.params.id);
     const [updatedProduct] = await db
       .update(productTable)
-      .set(req.body)
+      .set(req.cleanBody)
       .where(eq(productTable.id, id))
       .returning();
     if (updatedProduct) {
